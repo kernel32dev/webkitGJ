@@ -1,0 +1,3 @@
+VBGROUP 5.0
+Project=..\VB6_WebView2.vbp
+StartupProject=Project1.vbp

@@ -22,7 +22,7 @@ Begin VB.Form Form2
       Left            =   11640
       Top             =   360
    End
-   Begin VB6_WebView2.WebViewGJ WebViewGJ1 
+   Begin webkitGJ.WebViewGJ WebViewGJ1 
       Height          =   5655
       Left            =   0
       TabIndex        =   0
