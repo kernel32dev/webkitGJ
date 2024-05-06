@@ -44,49 +44,75 @@ Public WebViewShowOK As Boolean
 Public webHostHwnd As Long
 
 Private hResult As Long
-Private v As Variant
+
+Event Ready()
+
+Private Type DeferredCall
+    DoAction As String
+    MethodIndex As Long
+    Args() As Variant
+End Type
+
+Dim DeferredCalls() As DeferredCall
+Dim DeferredCallsMax As Long
+
+Public Sub RaiseReady()
+If webviewWindow Is Nothing Then Exit Sub
+RaiseEvent Ready
+If DeferredCallsMax = -1 Then Exit Sub
+Dim Z As Long
+For Z = 0 To DeferredCallsMax
+    VTableCallEx DeferredCalls(Z).DoAction, webviewWindow, DeferredCalls(Z).MethodIndex, DeferredCalls(Z).Args
+Next
+DeferredCallsMax = -1
+Erase DeferredCalls
+End Sub
 
 Property Get Url() As String
 Url = PrivateUrl
 End Property
 
 Function OpenURL(ByVal Url As String)
-    If Left(LCase(Url), 4) <> "http" Then Url = "http://" & Url
+    If Left(LCase(Url), 4) <> "http" And Left(LCase(Url), 4) <> "file" Then Url = "http://" & Url
     PrivateUrl = Url
-    v = VTableCallEx("Navigate", webviewWindow, 3, StrPtr(Url))
+    Dim Args() As Variant
+    Args = Array(StrPtr(Url))
+    VTableCallEx "Navigate", webviewWindow, 3, Args
 End Function
 
-Function OpenDevToolsWindow()
-    v = VTableCallEx("OpenDevToolsWindow", webviewWindow, 49)
-End Function
-
-Function ExecuteScript(JS As String)
-    v = VTableCallEx("ExecuteScript", webviewWindow, 27, StrPtr(JS), 0&)
-End Function
-
-Function AddHostObjectToScript(ObjName As String, Obj1 As Object)
-    v = VTableCallEx("AddHostObjectToScript", webviewWindow, 47, StrPtr(ObjName), ObjPtr(Obj1))
-
-    AddHostObjectToScript = hResult = 0
-End Function
-
-Function WebReSize() As Boolean
+Sub WebReSize()
     Dim RECT1 As RECT
     GetClientRect webHostHwnd, RECT1
     'webviewController->put_Bounds(bounds);
-    v = VTableCallEx("put_Bounds", webviewController, 4, RECT1.Left, RECT1.Top, RECT1.Right, RECT1.Bottom)
-    WebReSize = hResult = 0
-End Function
+    Dim Args() As Variant
+    Args = Array(RECT1.Left, RECT1.Top, RECT1.Right, RECT1.Bottom)
+    VTableCallEx "put_Bounds", webviewController, 4, Args
+End Sub
 
-Function VTableCallEx(DoAction As String, pUnk, ByVal MethodIndex As Long, ParamArray A() As Variant) As Variant
+Sub DeferableWindowVTableCallEx(DoAction As String, ByVal MethodIndex As Long, ParamArray Args() As Variant)
+If webviewWindow Is Nothing Then
+    DeferredCallsMax = DeferredCallsMax + 1
+    ReDim Preserve DeferredCalls(DeferredCallsMax)
+    DeferredCalls(DeferredCallsMax).DoAction = DoAction
+    DeferredCalls(DeferredCallsMax).MethodIndex = MethodIndex
+    DeferredCalls(DeferredCallsMax).Args = Args
+Else
+    Dim Args2() As Variant
+    Args2 = Args
+    VTableCallEx DoAction, webviewWindow, MethodIndex, Args2
+End If
+End Sub
+
+Private Function VTableCallEx(DoAction As String, pUnk, ByVal MethodIndex As Long, Args() As Variant) As Variant
     If pUnk Is Nothing Then Exit Function
     Const CC_STDCALL    As Long = 4
     Dim lIdx            As Long
     Dim vParam()        As Variant
     Dim vType(0 To 63)  As Integer
     Dim vPtr(0 To 63)   As Long
+    Dim hResult         As Long
     
-    vParam = A
+    vParam = Args
     For lIdx = 0 To UBound(vParam)
         vType(lIdx) = VarType(vParam(lIdx))
         vPtr(lIdx) = VarPtr(vParam(lIdx))
@@ -95,8 +121,8 @@ Function VTableCallEx(DoAction As String, pUnk, ByVal MethodIndex As Long, Param
     DoErr hResult, DoAction
 End Function
  
-Sub DoErr(ByVal ErrCode As Long, Optional DoAction As String)
-    Const HideErrInfo  As Boolean = True
+Private Sub DoErr(ByVal ErrCode As Long, Optional DoAction As String)
+    Const HideErrInfo As Boolean = True
     If ErrCode = 0 Then Exit Sub
     Dim Info As String
     If ErrCode = -1 Then
@@ -118,3 +144,6 @@ sReturn = Trim(sReturn)
 GetLastDllErr = sReturn
 End Function
 
+Private Sub Class_Initialize()
+DeferredCallsMax = -1
+End Sub

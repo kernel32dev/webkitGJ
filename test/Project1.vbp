@@ -1,7 +1,8 @@
 Type=Exe
 Form=_files\Form1.frm
 Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\Windows\SysWOW64\stdole2.tlb#OLE Automation
-Object=*\A..\VB6_WebView2.vbp
+Object={9E674B7F-0373-462D-97F2-BA643CCAEB64}#3.0#0; AWV-005.ocx
+IconForm="Form1"
 Startup="Form1"
 Command32=""
 Name="Project1"

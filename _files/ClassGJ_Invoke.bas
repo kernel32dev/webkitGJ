@@ -214,6 +214,8 @@ This.State.WebViewShowOK = True
 r = DispCallByVtbl(This.State.webviewController, 4 + 2, RECT1.Left, RECT1.Top, RECT1.Right, RECT1.Bottom)
 r = DispCallByVtbl(This.State.webviewWindow, 3 + 2, StrPtr(This.State.Url))
 
+This.State.RaiseReady
+
 Exit Function
 ERR:
 MsgBox "id=" & id & ",CLASS3 ERR:" & ERR.Description

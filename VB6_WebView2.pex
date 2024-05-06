@@ -1,4 +1,11 @@
 [Modules]=1
+CallVtbl=1
+ClassGJ_Invoke=1
 [Classes]=1
+ClassGJ_State=2
+JSCall=2
 [User Controls]=1
+WebViewGJ=8
 [Forms]=1
+Form2=5
+Form3=5
