@@ -1,5 +1,4 @@
 VERSION 5.00
-Object = "{9E674B7F-0373-462D-97F2-BA643CCAEB64}#3.0#0"; "AWV-005.ocx"
 Begin VB.Form Form1 
    Caption         =   "Form1"
    ClientHeight    =   7800
