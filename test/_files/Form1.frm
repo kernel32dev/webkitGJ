@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "*\A..\..\VB6_WebView2.vbp"
 Begin VB.Form Form1 
    Caption         =   "Form1"
    ClientHeight    =   7800
@@ -19,13 +20,13 @@ Begin VB.Form Form1
    ScaleWidth      =   11340
    StartUpPosition =   3  'Windows Default
    Begin webkitGJ.WebViewGJ WebViewGJ1 
-      Height          =   6315
-      Left            =   480
+      Height          =   5475
+      Left            =   300
       TabIndex        =   3
-      Top             =   900
-      Width           =   10215
-      _ExtentX        =   18018
-      _ExtentY        =   11139
+      Top             =   660
+      Width           =   10455
+      _ExtentX        =   18441
+      _ExtentY        =   9657
    End
    Begin VB.CommandButton Command2 
       Caption         =   "DevTools"
@@ -65,7 +66,7 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Sub Command1_Click()
-WebViewGJ1.Dispose
+  '   WebViewGJ1.Dispose
 End Sub
 
 Private Sub Command2_Click()
