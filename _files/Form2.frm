@@ -59,3 +59,7 @@ Private Sub Timer1_Timer()
 Timer1 = False
 WebViewGJ1.OpenURL PaginaInicial
 End Sub
+
+Private Sub WebViewGJ1_WebMessagePosted(Message As String)
+MsgBox Message
+End Sub

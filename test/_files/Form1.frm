@@ -20,13 +20,13 @@ Begin VB.Form Form1
    ScaleWidth      =   11340
    StartUpPosition =   3  'Windows Default
    Begin webkitGJ.WebViewGJ WebViewGJ1 
-      Height          =   5475
-      Left            =   300
+      Height          =   6735
+      Left            =   180
       TabIndex        =   3
       Top             =   660
-      Width           =   10455
-      _ExtentX        =   18441
-      _ExtentY        =   9657
+      Width           =   9975
+      _ExtentX        =   17595
+      _ExtentY        =   11880
    End
    Begin VB.CommandButton Command2 
       Caption         =   "DevTools"
@@ -71,11 +71,13 @@ End Sub
 
 Private Sub Command2_Click()
 WebViewGJ1.OpenDevToolsWindow
+WebViewGJ1.AddHostObjectToScript "eu", Me
 End Sub
 
 Private Sub Form_Load()
 Text1 = "google.com"
 WebViewGJ1.OpenURL Text1
+
 End Sub
 
 Private Sub Form_Resize()
@@ -93,3 +95,6 @@ Private Sub WebViewGJ1_JSCall(StrArg As String, ByVal NumArg As Long)
 MsgBox "StrArg = " & StrArg & vbNewLine & "NumArg = " & NumArg
 End Sub
 
+Private Sub WebViewGJ1_WebMessagePosted(Message As String)
+    MsgBox Message
+End Sub

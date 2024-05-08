@@ -25,6 +25,9 @@ Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination
 Private Declare Sub FillMemory Lib "kernel32" Alias "RtlFillMemory" (Destination As Any, ByVal Length As Long, ByVal FillByte As Long)
 Private Declare Function LocalAlloc Lib "kernel32" (ByVal wFlags As Long, ByVal wBytes As Long) As Long
 Private Declare Function LocalFree Lib "kernel32" (ByVal hMem As Long) As Long
+Private Declare Function lstrlen Lib "kernel32" Alias "lstrlenW" (ByVal lpString As Long) As Long
+Private Declare Sub CoTaskMemFree Lib "ole32" (ByVal lpVoid As Long)
+
 
 Public Type ClassGJ_Layout
     pVTable As Long
@@ -35,6 +38,7 @@ End Type
 Private m_VTable_Initialized As Boolean
 Private m_VTableA(3) As Long
 Private m_VTableB(3) As Long
+Private m_VTableC(3) As Long
 
 
 Private Declare Sub PostQuitMessage Lib "user32" (ByVal nExitCode As Long)
@@ -103,7 +107,7 @@ End Function
 'CreateCoreWebView2EnvironmentWithOptions(nullptr, nullptr, nullptr,
  '       Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
 
-Function PrivateNewClassGJ(State As ClassGJ_State, ByVal UseB As Boolean) As IUnknown
+Function PrivateNewClassGJ(State As ClassGJ_State, ByVal VTableSelect As Long) As IUnknown
 
    If Not m_VTable_Initialized Then
         m_VTableA(0) = GetAddress(AddressOf QueryInterface)
@@ -114,17 +118,20 @@ Function PrivateNewClassGJ(State As ClassGJ_State, ByVal UseB As Boolean) As IUn
         m_VTableB(1) = GetAddress(AddressOf AddRef)
         m_VTableB(2) = GetAddress(AddressOf Release)
         m_VTableB(3) = GetAddress(AddressOf InvokeB)
+        m_VTableC(0) = GetAddress(AddressOf QueryInterface)
+        m_VTableC(1) = GetAddress(AddressOf AddRef)
+        m_VTableC(2) = GetAddress(AddressOf Release)
+        m_VTableC(3) = GetAddress(AddressOf InvokeC)
         m_VTable_Initialized = True
     End If
     
     Dim StackInstance As ClassGJ_Layout
     Dim HeapInstance As Long
     
-    If Not UseB Then
-        StackInstance.pVTable = VarPtr(m_VTableA(0))
-    Else
-        StackInstance.pVTable = VarPtr(m_VTableB(0))
-    End If
+    If VTableSelect = 0 Then StackInstance.pVTable = VarPtr(m_VTableA(0))
+    If VTableSelect = 1 Then StackInstance.pVTable = VarPtr(m_VTableB(0))
+    If VTableSelect = 2 Then StackInstance.pVTable = VarPtr(m_VTableC(0))
+    
     StackInstance.RefC = 1
     Set StackInstance.State = State
     
@@ -140,10 +147,12 @@ Private Function QueryInterface(This As ClassGJ_Layout, riid As Long, pvObj As L
     Const E_NOINTERFACE As Long = &H80004002
     pvObj = 0
     QueryInterface = E_NOINTERFACE
+    Debug.Print "QueryInterface"
 End Function
 
 Private Function AddRef(This As ClassGJ_Layout) As Long
 This.RefC = This.RefC + 1
+Debug.Print "AddRef"
 End Function
 
 Private Function Release(This As ClassGJ_Layout) As Long
@@ -153,13 +162,14 @@ If This.RefC <= 0 Then
     Set This.State = Nothing
     LocalFree VarPtr(This)
 End If
+Debug.Print "Release"
 End Function
 
 Private Function InvokeA(This As ClassGJ_Layout, ByVal errorCode As Long, ByVal OBJ1Address As Long) As Long
 
     On Error GoTo ERR
     Dim id As Long
-    
+    Debug.Print "InvokeA"
     Dim IUnknown1 As IUnknown
     
 
@@ -167,7 +177,7 @@ Private Function InvokeA(This As ClassGJ_Layout, ByVal errorCode As Long, ByVal 
 'Static ICoreWebView2Environment As Object
 Set This.State.ICoreWebView2EnvironmentObjA = ObjFromPtr(VarPtr(OBJ1Address))
  
-Set IUnknown1 = PrivateNewClassGJ(This.State, True)
+Set IUnknown1 = PrivateNewClassGJ(This.State, 1)
 Dim Hwnd As Long
 Hwnd = This.State.webHostHwnd
 'env->CreateCoreWebView2Controller(hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>
@@ -184,7 +194,7 @@ End Function
 
 Private Function InvokeB(This As ClassGJ_Layout, ByVal ErrCode As Long, ByVal OBJ1Address As Long) As Long
 'IUnknown
-    
+    Debug.Print "InvokeB"
 On Error GoTo ERR
 Dim id As Long
 If OBJ1Address = 0 Then
@@ -214,9 +224,41 @@ This.State.WebViewShowOK = True
 r = DispCallByVtbl(This.State.webviewController, 4 + 2, RECT1.Left, RECT1.Top, RECT1.Right, RECT1.Bottom)
 r = DispCallByVtbl(This.State.webviewWindow, 3 + 2, StrPtr(This.State.Url))
 
+Dim Trash(32) As Byte
+
+Dim IUnknown1 As IUnknown
+Set IUnknown1 = PrivateNewClassGJ(This.State, 2)
+r = DispCallByVtbl(This.State.webviewWindow, 32 + 2, ObjPtr(IUnknown1), VarPtr(Trash(0)))
+
 This.State.RaiseReady
 
 Exit Function
 ERR:
 MsgBox "id=" & id & ",CLASS3 ERR:" & ERR.Description
 End Function
+
+Private Function InvokeC(This As ClassGJ_Layout, ByVal ErrCode As Long, ByVal OBJ1Address As Long) As Long
+Dim r As Variant
+Dim Obj As IUnknown
+Dim StringPtr As Long
+Dim StringLen As Long
+Dim Text As String
+
+CopyMemory Obj, OBJ1Address, 4
+r = DispCallByVtbl(Obj, 5, VarPtr(StringPtr))
+
+StringLen = lstrlen(StringPtr)
+FillMemory Obj, 4, 0
+
+Text = String$(StringLen, 0)
+CopyMemory ByVal StrPtr(Text), ByVal StringPtr, StringLen * 2
+
+If Not This.State.WebMessageCallback Is Nothing Then
+    This.State.WebMessageCallback.PostWebMessage Text
+End If
+
+CoTaskMemFree StringPtr
+
+FillMemory Obj, 4, 0
+End Function
+'IUnknown

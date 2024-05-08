@@ -39,6 +39,8 @@ Public webviewController As Object
 Public ICoreWebView2EnvironmentObjB As Object
 Public ICoreWebView2EnvironmentObjA As Object
 
+Public WebMessageCallback As ClassGJ_Callback
+
 'CallWebView2
 Public WebViewShowOK As Boolean
 Public webHostHwnd As Long

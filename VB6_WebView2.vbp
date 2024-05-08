@@ -7,10 +7,11 @@ UserControl=_files\WebViewGJ.ctl
 Form=_files\Form2.frm
 Form=_files\Form3.frm
 Class=JSCall; _files\JSCall.cls
+Class=ClassGJ_Callback; test\_files\ClassGJ_Callback.cls
 Startup="(None)"
 HelpFile=""
 Title="VB6_WebView2"
-ExeName32="AWV-005.ocx"
+ExeName32="AWV-008.ocx"
 Path32="..\..\..\sistema\os"
 Command32=""
 Name="webkitGJ"
@@ -20,7 +21,7 @@ CompatibleMode="0"
 CompatibleEXE32="VB6_WebView2.ocx0000000000002.ocx"
 MajorVer=24
 MinorVer=4
-RevisionVer=6
+RevisionVer=9
 AutoIncrementVer=1
 ServerSupportFiles=0
 CompilationType=0
@@ -41,4 +42,4 @@ MaxNumberOfThreads=1
 
 [Prático]
 cboUIAccess=0
-last-version=24.4.5
+last-version=24.4.8
