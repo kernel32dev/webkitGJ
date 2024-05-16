@@ -19,6 +19,14 @@ Begin VB.Form Form1
    ScaleHeight     =   7800
    ScaleWidth      =   11340
    StartUpPosition =   3  'Windows Default
+   Begin VB.CommandButton Command3 
+      Caption         =   "Clone"
+      Height          =   255
+      Left            =   10200
+      TabIndex        =   4
+      Top             =   120
+      Width           =   975
+   End
    Begin webkitGJ.WebViewGJ WebViewGJ1 
       Height          =   6735
       Left            =   180
@@ -72,6 +80,11 @@ End Sub
 Private Sub Command2_Click()
 WebViewGJ1.OpenDevToolsWindow
 WebViewGJ1.AddHostObjectToScript "eu", Me
+End Sub
+
+Private Sub Command3_Click()
+Dim F As New Form1
+F.Show
 End Sub
 
 Private Sub Form_Load()

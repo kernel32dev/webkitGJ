@@ -1,13 +1,11 @@
 Type=Control
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\Windows\SysWOW64\stdole2.tlb#OLE Automation
+Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\..\Windows\SysWOW64\stdole2.tlb#OLE Automation
 Module=ClassGJ_Invoke; _files\ClassGJ_Invoke.bas
 Module=CallVtbl; _files\CallVtbl.bas
 Class=ClassGJ_State; _files\ClassGJ_State.cls
 UserControl=_files\WebViewGJ.ctl
-Form=_files\Form2.frm
-Form=_files\Form3.frm
 Class=JSCall; _files\JSCall.cls
-Class=ClassGJ_Callback; test\_files\ClassGJ_Callback.cls
+Class=ClassGJ_Callback; _files\ClassGJ_Callback.cls
 Startup="(None)"
 HelpFile=""
 Title="VB6_WebView2"
